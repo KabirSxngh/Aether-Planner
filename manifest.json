@@ -1,8 +1,8 @@
 {
-  "name": "Aether Planner",
+  "name": "Aether-Planner",
   "short_name": "Aether",
   "description": "A beautiful, personalized date planner, created by a brilliant director and their AI.",
-  "start_url": ".",
+  "start_url": "/?home=true",
   "display": "standalone",
   "background_color": "#6d50a0",
   "theme_color": "#6d50a0",
@@ -19,4 +19,5 @@
     }
   ]
 }
+
 
