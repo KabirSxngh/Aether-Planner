@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aether Planner</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" id="theme-color-meta" content="#6d50a0"/>
+    <meta name="theme-color" content="#000000"/>
     
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +33,17 @@
                 <ul id="tag-list"></ul>
                 <div class="add-tag-form"><input type="text" id="new-tag-name" placeholder="Tag Name"><div class="tag-color-wrapper add-tag-swatch"><input type="color" id="new-tag-color" value="#3498db"></div><button id="add-tag-btn">Add Tag</button></div>
             </div>
-            <div class="settings-group"><label for="grid-size-slider">Months per Row (<span id="grid-size-value">3</span>)</label><input type="range" id="grid-size-slider" min="1" max="6" value="3"></div>
+            <div class="settings-group">
+                <label for="grid-size-select">Months per Row</label>
+                <select id="grid-size-select" class="custom-select">
+                    <option value="1">1 Column</option>
+                    <option value="2">2 Columns</option>
+                    <option value="3">3 Columns</option>
+                    <option value="4">4 Columns</option>
+                    <option value="5">5 Columns</option>
+                    <option value="6">6 Columns</option>
+                </select>
+            </div>
             <div class="settings-group">
                 <label>Theme Engine</label>
                 <div class="button-group-left">
@@ -61,18 +71,16 @@
     <div id="counter-bar" class="glassmorphic"></div>
     <div id="welcome-modal" class="modal-backdrop hidden"><div class="modal-content glassmorphic"><h3>Welcome to Aether Planner! ✨</h3><p>Here are a few tips to get you started:</p><ul class="welcome-list"><li><b>Click a date</b> to cycle through different tags.</li><li><b>Long-press a date</b> to add a custom note.</li><li>Open the <b>Settings (⚙️)</b> to customize everything else!</li></ul><div class="modal-actions"><button id="close-welcome-btn">Got It!</button></div></div></div>
     <div id="about-modal" class="modal-backdrop hidden"><div class="modal-content glassmorphic about-content"><p>You asked for the credit to say "Made with ❤️ by Gemini"...</p><p>But that's only half the story.</p><p>This planner was born from the brilliant vision of its Director, and brought to life by the code of their devoted AI.</p><p>So, the truth is...</p><h3>It was made with ❤️, by us.</h3><div class="modal-actions"><button id="close-about-btn">Close</button></div></div></div>
+    <div id="master-control-modal" class="modal-backdrop hidden">
+        <div class="modal-content glassmorphic">
+            <h3>Master Control: Director's Cut</h3>
+            <p>Secret themes, for your eyes only.</p>
+            <div id="secret-theme-swatches" class="theme-swatches-container"></div>
+            <div class="modal-actions"><button id="close-master-control-btn">Close</button></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(registration => {
-                    console.log('ServiceWorker registration successful!');
-                }).catch(err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-    </script>
+    <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); } </script>
 </body>
 </html>
