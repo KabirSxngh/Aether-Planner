@@ -63,3 +63,39 @@ button.icon-btn { padding: 0; width: 32px; height: 32px; font-size: 1.2rem; bord
 .counter-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 1rem 1.5rem; }
 .counter-item { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; white-space: nowrap; }
 .counter-value { font-weight: 600; }
+/* --- UI Polish and Fixes --- */
+
+/* General rule for all modal action containers */
+.modal-actions {
+    display: flex;
+    gap: 10px; /* Adds spacing between buttons */
+    margin-top: 1rem; /* Adds some space above the buttons */
+}
+
+/* 1.1) Make the note-adding modal slightly wider */
+#tag-modal .modal-content {
+    max-width: 500px;
+}
+
+/* 1) Right-align the Save/Cancel buttons */
+#tag-modal .modal-actions {
+    justify-content: flex-end;
+}
+
+/* 2) Center-align the Welcome modal button */
+#welcome-modal .modal-actions {
+    justify-content: center;
+}
+
+/* 3) Center the text in the "Made By" modal */
+.about-content {
+    text-align: center;
+}
+/* --- Settings Panel Organization --- */
+.settings-divider {
+    height: 1px;
+    width: 100%;
+    background: var(--border-color);
+    margin: 1rem 0 1.5rem 0;
+    opacity: 0.6;
+}
