@@ -42,12 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let settingsClickCount = 0;
     let settingsClickTimer = null;
     const secretThemes = [
-        { name: 'Rose-Gold', gradient: 'linear-gradient(to right top, #b7abcf, #e1c2c8)', accent: '#e1c2c8', primary: '#b7abcf' },
-        { name: 'Lavender', gradient: 'linear-gradient(to right top, #a18cd1, #fbc2eb)', accent: '#a18cd1', primary: '#a18cd1' },
-        { name: 'Sunshine', gradient: 'linear-gradient(to right top, #ffc371, #ff5f6d)', accent: '#ffc371', primary: '#ffc371' },
-        { name: 'Developer', gradient: 'linear-gradient(to right top, #4A00E0, #8E2DE2)', accent: '#4A00E0', primary: '#4A00E0' },
-        { name: 'Just Black', gradient: '#000000', accent: '#f60000ff', primary: '#000000' }
-    ];
+    { name: 'Rose-Gold', gradient: 'linear-gradient(to right top, #b7abcf, #e1c2c8)', accent: '#e1c2c8', primary: '#b7abcf', shadow: '#5c5566' },
+    { name: 'Lavender', gradient: 'linear-gradient(to right top, #a18cd1, #fbc2eb)', accent: '#a18cd1', primary: '#a18cd1', shadow: '#4d4366' },
+    { name: 'Sunshine', gradient: 'linear-gradient(to right top, #ffc371, #ff5f6d)', accent: '#ffc371', primary: '#ffc371', shadow: '#804c38' },
+    { name: 'Developer', gradient: 'linear-gradient(to right top, #4A00E0, #8E2DE2)', accent: '#4A00E0', primary: '#4A00E0', shadow: '#2c0087' },
+    { name: 'Just Black', gradient: '#000000', accent: '#ff2e2eff', primary: '#000000', shadow: '#a60d0dff' }
+];
 
     const today = new Date();
     const year = today.getFullYear();
@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         renderSecretThemes();
         loadState();
+        renderTags();
         bindEvents();
         generateCalendar();
     }
@@ -87,7 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = localStorage.getItem(`aetherPlanner_${key}`);
             savedData[key] = item ? JSON.parse(item) : null;
         });
-        if (savedData.themeGradient && savedData.themeAccent) { applyTheme({ gradient: savedData.themeGradient, accent: savedData.themeAccent, primary: (savedData.themeGradient.match(/hsl\(.*?\)|#\w{3,6}|rgb\(.*?\)/g) || ['#000000'])[0] }); }
+        if (savedData.themeGradient && savedData.themeAccent) {
+        // Pass 'false' here to prevent the premature save
+        applyTheme({ gradient: savedData.themeGradient, accent: savedData.themeAccent, primary: (savedData.themeGradient.match(/hsl\(.*?\)|#\w{3,6}|rgb\(.*?\)/g) || ['#000000'])[0] }, false);
+    }
         tags = savedData.tags || [ { name: 'Weekend', color: '#2ecc71' }, { name: 'Holiday', color: '#e74c3c' }, { name: 'Festival', color: '#f1c40f' } ];
         dateData = savedData.dateData || {};
         if (!savedData.tags && !savedData.dateData) { const weekendTag = tags.find(t => t.name === 'Weekend'); if (weekendTag) { const defaultStartDate = new Date(todayString); const defaultEndDate = new Date(todayString); defaultEndDate.setMonth(defaultEndDate.getMonth() + 2); let currentDate = new Date(defaultStartDate); while (currentDate <= defaultEndDate) { const dayOfWeek = currentDate.getDay(); if (dayOfWeek === 0 || dayOfWeek === 6) { const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`; dateData[dateStr] = { name: weekendTag.name, color: weekendTag.color }; } currentDate.setDate(currentDate.getDate() + 1); } } }
@@ -114,12 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tagList.addEventListener('click', handleTagListClick);
         tagList.addEventListener('input', handleTagColorChange);
         addTagBtn.addEventListener('click', addTag);
-        lightThemeBtn.addEventListener('click', () => applyTheme('random'));
-        darkThemeBtn.addEventListener('click', () => applyTheme('dark'));
+        // Corrected lines
+        lightThemeBtn.addEventListener('click', () => applyRandomTheme('light'));
+        darkThemeBtn.addEventListener('click', () => applyRandomTheme('dark'));
         downloadBtn.addEventListener('click', downloadCalendar);
         counterToggle.addEventListener('change', () => { updateCounterVisibility(); saveState(); });
         plannerTitle.addEventListener('click', handleTitleClick);
         aboutModal.addEventListener('click', e => { if (e.target === aboutModal) aboutModal.classList.add('hidden'); });
+        closeAboutBtn.addEventListener('click', () => aboutModal.classList.add('hidden')); // <-- ADD THIS LINE
         calendarContainer.addEventListener('mousedown', handleDateMouseDown);
         calendarContainer.addEventListener('mouseup', handleDateMouseUp);
         calendarContainer.addEventListener('mouseleave', handleDateMouseUp);
@@ -132,41 +138,67 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarContainer.addEventListener('click', handleDateClick);
     }
 
-    function applyTheme(theme) {
-        document.documentElement.style.setProperty('--bg-gradient', theme.gradient);
-        document.documentElement.style.setProperty('--accent-color', theme.accent);
+    // Add the 'shouldSave = true' parameter and the 'if' condition
+    function applyTheme(theme, shouldSave = true) {
+    document.documentElement.style.setProperty('--bg-gradient', theme.gradient);
+    document.documentElement.style.setProperty('--accent-color', theme.accent);
+    document.documentElement.style.setProperty('--shadow-color', theme.shadow); // <-- ADD THIS LINE
+    if (shouldSave) {
         saveState();
     }
+}
     
     function applyRandomTheme(type = 'light') {
-        const baseHue = Math.floor(Math.random() * 360);
-        let theme = {};
-        if (type === 'dark') {
-            const darkSat = 60 + Math.floor(Math.random() * 20);
-            const darkLight1 = 10 + Math.floor(Math.random() * 5);
-            const darkLight2 = 15 + Math.floor(Math.random() * 5);
-            const accentLight = 60 + Math.floor(Math.random() * 10);
-            const color1 = `hsl(${baseHue}, ${darkSat}%, ${darkLight1}%)`;
-            const color2 = `hsl(${(baseHue + 40) % 360}, ${darkSat - 10}%, ${darkLight2}%)`;
-            const accent = `hsl(${(baseHue + 150) % 360}, ${darkSat + 10}%, ${accentLight}%)`;
-            theme = { gradient: `linear-gradient(to right top, ${color1}, ${color2})`, accent: accent, primary: color1 };
-        } else {
-            const randSat = 50 + Math.floor(Math.random() * 20);
-            const randLight = 55 + Math.floor(Math.random() * 10);
-            const randColor1 = `hsl(${baseHue}, ${randSat}%, ${randLight}%)`;
-            const randColor2 = `hsl(${(baseHue + 40) % 360}, ${randSat - 5}%, ${randLight - 10}%)`;
-            const accent = `hsl(${(baseHue + 20) % 360}, ${randSat + 20}%, ${randLight + 5}%)`;
-            theme = { gradient: `linear-gradient(to right top, ${randColor1}, ${randColor2})`, accent: accent, primary: randColor1 };
-        }
-        applyTheme(theme);
+    const baseHue = Math.floor(Math.random() * 360);
+    let theme = {};
+    if (type === 'dark') {
+        const darkSat = 60 + Math.floor(Math.random() * 20);
+        const darkLight1 = 10 + Math.floor(Math.random() * 5);
+        const darkLight2 = 15 + Math.floor(Math.random() * 5);
+        const accentLight = 60 + Math.floor(Math.random() * 10);
+        const color1 = `hsl(${baseHue}, ${darkSat}%, ${darkLight1}%)`;
+        const color2 = `hsl(${(baseHue + 40) % 360}, ${darkSat - 10}%, ${darkLight2}%)`;
+        const accent = `hsl(${(baseHue + 150) % 360}, ${darkSat + 10}%, ${accentLight}%)`;
+        const shadow = `hsl(${baseHue}, ${darkSat}%, 4%)`; // <-- ADD THIS LINE
+        theme = { gradient: `linear-gradient(to right top, ${color1}, ${color2})`, accent: accent, primary: color1, shadow: shadow }; // <-- AND ADD 'shadow' HERE
+    } else {
+        const randSat = 50 + Math.floor(Math.random() * 20);
+        const randLight = 55 + Math.floor(Math.random() * 10);
+        const randColor1 = `hsl(${baseHue}, ${randSat}%, ${randLight}%)`;
+        const randColor2 = `hsl(${(baseHue + 40) % 360}, ${randSat - 5}%, ${randLight - 10}%)`;
+        const accent = `hsl(${(baseHue + 20) % 360}, ${randSat + 20}%, ${randLight + 5}%)`;
+        const shadow = `hsl(${baseHue}, ${randSat}%, 20%)`; // <-- ADD THIS LINE
+        theme = { gradient: `linear-gradient(to right top, ${randColor1}, ${randColor2})`, accent: accent, primary: randColor1, shadow: shadow }; // <-- AND ADD 'shadow' HERE
     }
+    applyTheme(theme);
+}
     
     function renderSecretThemes() { secretThemes.forEach((theme) => { const swatch = document.createElement('button'); swatch.className = 'theme-swatch'; swatch.title = theme.name; swatch.style.background = theme.gradient; swatch.dataset.themeName = theme.name; secretThemeSwatches.appendChild(swatch); }); }
     function handleSettingsClick() { settingsPanel.classList.toggle('show'); const now = Date.now(); if (!settingsClickTimer || (now - settingsClickTimer > 1500)) { settingsClickCount = 1; settingsClickTimer = now; } else { settingsClickCount++; } if (settingsClickCount === 5) { masterControlModal.classList.remove('hidden'); settingsClickCount = 0; } }
     function handleSecretThemeClick(e) { if (e.target.classList.contains('theme-swatch')) { const themeName = e.target.dataset.themeName; const selectedTheme = secretThemes.find(t => t.name === themeName); if (selectedTheme) { applyTheme(selectedTheme); } } }
     function setDefaultDates() { const localToday = new Date(todayString); const twoMonthsLater = new Date(localToday); twoMonthsLater.setMonth(localToday.getMonth() + 2); startDateInput.value = todayString; endDateInput.value = twoMonthsLater.toISOString().split('T')[0]; }
     function generateCalendar() { calendarContainer.innerHTML = ''; const startDate = new Date(startDateInput.value); const endDate = new Date(endDateInput.value); const monthDifference = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()); if (monthDifference > 60) { alert("That's a bit ambitious! Please select a date range of 5 years or less to ensure performance."); return; } if (isNaN(startDate) || isNaN(endDate) || startDate > endDate) { calendarContainer.innerHTML = '<div class="error-message glassmorphic">Invalid date range.</div>'; return; } startDate.setUTCHours(0, 0, 0, 0); endDate.setUTCHours(0, 0, 0, 0); let currentDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), 1)); while (currentDate <= endDate) { createMonthGrid(currentDate.getUTCFullYear(), currentDate.getUTCMonth()); currentDate.setUTCMonth(currentDate.getUTCMonth() + 1); } updateCounter(); }
-    function createMonthGrid(year, month) { const startDate = new Date(startDateInput.value); startDate.setUTCHours(0, 0, 0, 0); const endDate = new Date(endDateInput.value); endDate.setUTCHours(0, 0, 0, 0); const monthContainer = document.createElement('div'); monthContainer.className = 'month-grid glassmorphic'; const monthName = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' }); monthContainer.innerHTML = `<h3 class="month-header">${monthName}</h3>`; const calendarGrid = document.createElement('div'); calendarGrid.className = 'calendar'; ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => { const dayNameEl = document.createElement('div'); dayNameEl.className = 'day-name'; dayNameEl.textContent = day; calendarGrid.appendChild(dayNameEl); }); const firstDay = new Date(Date.UTC(year, month, 1)).getUTCDay(); const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(); for (let i = 0; i < firstDay; i++) { const emptyCell = document.createElement('div'); emptyCell.className = 'date-cell empty-day'; calendarGrid.appendChild(emptyCell); } for (let day = 1; day <= daysInMonth; day++) { const dateCell = document.createElement('div'); dateCell.className = 'date-cell'; const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; dateCell.dataset.date = dateStr; const currentCellDate = new Date(dateStr); currentCellDate.setUTCHours(0, 0, 0, 0); if (currentCellDate < startDate || currentCellDate > endDate) { dateCell.classList.add('disabled'); } if (dateStr === todayString) { dateCell.classList.add('today'); } dateCell.innerHTML = `<span class="date-number">${day}</span>`; if (dateData[dateStr]) { const tagData = dateData[dateStr]; if(tagData.color) { dateCell.style.backgroundColor = tagData.color; dateCell.dataset.currentTag = tagData.name; } if(tagData.customText) { dateCell.innerHTML += `<span class="date-tag">${tagData.customText}</span>`; } } calendarGrid.appendChild(dateCell); } const totalCells = firstDay + daysInMonth; const cellsToAdd = 42 - totalCells; for (let i = 0; i < cellsToAdd; i++) { const emptyCell = document.createElement('div'); emptyCell.className = 'date-cell empty-day'; calendarGrid.appendChild(emptyCell); } monthContainer.appendChild(calendarGrid); const wrapper = document.createElement('div'); wrapper.className = 'month-grid-wrapper'; wrapper.appendChild(monthContainer); calendarContainer.appendChild(wrapper); }
+    function createMonthGrid(year, month) { 
+        const startDate = new Date(startDateInput.value); 
+        startDate.setUTCHours(0, 0, 0, 0); 
+        const endDate = new Date(endDateInput.value); 
+        endDate.setUTCHours(0, 0, 0, 0); 
+        const monthContainer = document.createElement('div'); 
+        monthContainer.className = 'month-grid glassmorphic'; 
+        const monthName = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' }); 
+        monthContainer.innerHTML = `<h3 class="month-header">${monthName}</h3>`; const calendarGrid = document.createElement('div'); 
+        calendarGrid.className = 'calendar'; ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(
+            day => { 
+                const dayNameEl = document.createElement('div'); 
+                dayNameEl.className = 'day-name'; dayNameEl.textContent = day; calendarGrid.appendChild(dayNameEl); 
+        }); const firstDay = new Date(Date.UTC(year, month, 1)).getUTCDay(); const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate(); for (let i = 0; i < firstDay; i++) { const emptyCell = document.createElement('div'); emptyCell.className = 'date-cell empty-day'; calendarGrid.appendChild(emptyCell); } for (let day = 1; day <= daysInMonth; day++) { const dateCell = document.createElement('div'); dateCell.className = 'date-cell'; const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; dateCell.dataset.date = dateStr; const currentCellDate = new Date(dateStr); currentCellDate.setUTCHours(0, 0, 0, 0); if (currentCellDate < startDate || currentCellDate > endDate) { dateCell.classList.add('disabled'); } if (dateStr === todayString) { dateCell.classList.add('today'); } dateCell.innerHTML = `<span class="date-number">${day}</span>`; if (dateData[dateStr]) { const tagData = dateData[dateStr]; 
+            // ...and replace it with this
+        if (tagData.color) {
+        dateCell.style.backgroundColor = tagData.color;
+        dateCell.style.boxShadow = `0 0 8px ${tagData.color}, 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05)`;
+        dateCell.dataset.currentTag = tagData.name;
+        } 
+            if(tagData.customText) { dateCell.innerHTML += `<span class="date-tag">${tagData.customText}</span>`; } } calendarGrid.appendChild(dateCell); } const totalCells = firstDay + daysInMonth; const cellsToAdd = 42 - totalCells; for (let i = 0; i < cellsToAdd; i++) { const emptyCell = document.createElement('div'); emptyCell.className = 'date-cell empty-day'; calendarGrid.appendChild(emptyCell); } monthContainer.appendChild(calendarGrid); const wrapper = document.createElement('div'); wrapper.className = 'month-grid-wrapper'; wrapper.appendChild(monthContainer); calendarContainer.appendChild(wrapper); }
     function downloadCalendar() { const bodyGradient = getComputedStyle(document.documentElement).getPropertyValue('background'); html2canvas(calendarContainer, { useCORS: true, allowTaint: true, onclone: (doc) => { doc.getElementById('calendar-container').style.background = bodyGradient; } }).then(canvas => { const link = document.createElement('a'); link.download = `Aether-Planner-${new Date().toISOString().split('T')[0]}.png`; link.href = canvas.toDataURL('image/png'); link.click(); }); }
     function updateCounter() { let counts = {}; tags.forEach(tag => counts[tag.name] = 0); let taggedDays = 0; const allDateCells = calendarContainer.querySelectorAll('.date-cell:not(.empty-day):not(.disabled)'); const totalActiveDays = allDateCells.length; allDateCells.forEach(cell => { const dateStr = cell.dataset.date; if (dateData[dateStr] && dateData[dateStr].name) { const tagName = dateData[dateStr].name; if (counts[tagName] !== undefined) { counts[tagName]++; taggedDays++; } } }); let counterHTML = `<div class="counter-content">`; tags.forEach(tag => { const swatchSVG = `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; border: 1px solid var(--border-color); flex-shrink: 0;"><rect width="16" height="16" fill="${tag.color}" /></svg>`; counterHTML += `<div class="counter-item">${swatchSVG}<span class="counter-label">${tag.name}:</span><span class="counter-value">${counts[tag.name] || 0}</span></div>`; }); counterHTML += `<div class="counter-item"><span class="counter-label">Untagged:</span><span class="counter-value">${totalActiveDays - taggedDays}</span></div>`; counterHTML += `</div>`; counterBar.innerHTML = counterHTML; }
     function updateCounterVisibility() { if (counterToggle.checked) { counterBar.classList.remove('hidden'); } else { counterBar.classList.add('hidden'); } }
@@ -178,9 +210,53 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleTitleClick() { titleClickCount++; if (titleClickCount === 1) { titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 500); } else if (titleClickCount === 3) { clearTimeout(titleClickTimer); titleClickCount = 0; aboutModal.classList.remove('hidden'); } }
     function handleDateMouseDown(e) { targetCell = e.target.closest('.date-cell'); if (!targetCell || targetCell.classList.contains('empty-day') || targetCell.classList.contains('disabled')) return; isLongPress = false; longPressTimer = setTimeout(() => { isLongPress = true; showModal(targetCell); }, 700); }
     function handleDateMouseUp() { clearTimeout(longPressTimer); }
-    function handleDateClick(e) { targetCell = e.target.closest('.date-cell'); if (!targetCell || targetCell.classList.contains('empty-day') || targetCell.classList.contains('disabled') || isLongPress) return; const dateStr = targetCell.dataset.date; if (dateStr.endsWith('-10-28')) { triggerConfettiShower(); } const currentTagName = targetCell.dataset.currentTag; const currentIndex = tags.findIndex(tag => tag.name === currentTagName); const nextIndex = currentIndex + 1; if (nextIndex < tags.length) { const nextTag = tags[nextIndex]; targetCell.style.backgroundColor = nextTag.color; targetCell.dataset.currentTag = nextTag.name; dateData[dateStr] = { ...(dateData[dateStr] || {}), color: nextTag.color, name: nextTag.name }; } else { targetCell.style.backgroundColor = ''; targetCell.removeAttribute('data-current-tag'); if (dateData[dateStr]) { delete dateData[dateStr].color; delete dateData[dateStr].name; if (Object.keys(dateData[dateStr]).length === 0) delete dateData[dateStr]; } } updateCounter(); saveState(); }
+
+    function handleDateClick(e) {
+        
+        
+        targetCell = e.target.closest('.date-cell'); 
+        if (!targetCell || targetCell.classList.contains('empty-day') || targetCell.classList.contains('disabled') || isLongPress) return; const dateStr = targetCell.dataset.date; 
+        if (dateStr.endsWith('-10-28')) { triggerConfettiShower(); } 
+        const currentTagName = targetCell.dataset.currentTag; 
+        const currentIndex = tags.findIndex(tag => tag.name === currentTagName); 
+        const nextIndex = currentIndex + 1; 
+
+        if (nextIndex < tags.length) {
+    const nextTag = tags[nextIndex];
+    targetCell.style.backgroundColor = nextTag.color;
+    targetCell.style.boxShadow = `0 0 8px ${nextTag.color}, 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05)`;
+    targetCell.dataset.currentTag = nextTag.name;
+    dateData[dateStr] = { ...(dateData[dateStr] || {}), color: nextTag.color, name: nextTag.name };
+} else {
+    targetCell.style.backgroundColor = '';
+    targetCell.style.boxShadow = ''; // This removes the glow
+    targetCell.removeAttribute('data-current-tag');
+    if (dateData[dateStr]) {
+        delete dateData[dateStr].color;
+        delete dateData[dateStr].name;
+        if (Object.keys(dateData[dateStr]).length === 0) delete dateData[dateStr];
+    }
+} 
+            updateCounter(); 
+            saveState(); 
+            
+            
+            }
+    
     function triggerConfettiShower() { const duration = 2 * 1000; const animationEnd = Date.now() + duration; const colors = ['#FFFFFF', '#FFC0CB', '#FFD700', getComputedStyle(document.documentElement).getPropertyValue('--accent-color')]; const randomInRange = (min, max) => Math.random() * (max - min) + min; const interval = setInterval(() => { const timeLeft = animationEnd - Date.now(); if (timeLeft <= 0) { return clearInterval(interval); } const particleCount = 50 * (timeLeft / duration); confetti({ startVelocity: 30, spread: 360, ticks: 60, zIndex: 0, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: colors }); confetti({ startVelocity: 30, spread: 360, ticks: 60, zIndex: 0, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: colors }); }, 250); }
-    function showModal(cell) { const content = document.querySelector('#tag-modal'); content.innerHTML = `<div class="modal-content glassmorphic"><h4>Add a note to this date</h4><input type="text" id="custom-tag-input" placeholder="e.g., 'Project Deadline'"><div class="modal-actions"><button id="save-tag-btn">Save</button><button id="cancel-tag-btn" class="secondary">Cancel</button></div></div>`; modal.classList.remove('hidden'); document.getElementById('custom-tag-input').value = dateData[cell.dataset.date]?.customText || ''; document.getElementById('custom-tag-input').focus(); }
+    function showModal(cell) {
+    // This line replaces the content, destroying the old buttons and their listeners.
+    modal.innerHTML = `<div class="modal-content glassmorphic"><h4>Add a note to this date</h4><input type="text" id="custom-tag-input" placeholder="e.g., 'Project Deadline'"><div class="modal-actions"><button id="save-tag-btn">Save</button><button id="cancel-tag-btn" class="secondary">Cancel</button></div></div>`;
+    
+    // **THE FIX:** Now, we find the *new* buttons and attach listeners to them.
+    document.getElementById('save-tag-btn').addEventListener('click', saveCustomTag);
+    document.getElementById('cancel-tag-btn').addEventListener('click', hideModal);
+
+    modal.classList.remove('hidden');
+    const customInput = document.getElementById('custom-tag-input');
+    customInput.value = dateData[cell.dataset.date]?.customText || '';
+    customInput.focus();
+}
     function hideModal() { modal.classList.add('hidden'); }
     function saveCustomTag() { if (!targetCell) return; const dateStr = targetCell.dataset.date; const customText = document.getElementById('custom-tag-input').value.trim(); const existingTagEl = targetCell.querySelector('.date-tag'); if (existingTagEl) existingTagEl.remove(); if (customText) { targetCell.innerHTML += `<span class="date-tag">${customText}</span>`; if (!dateData[dateStr]) dateData[dateStr] = {}; dateData[dateStr].customText = customText; } else { if (dateData[dateStr]) { delete dateData[dateStr].customText; if (Object.keys(dateData[dateStr]).length === 0) delete dateData[dateStr]; } } hideModal(); saveState(); }
     
