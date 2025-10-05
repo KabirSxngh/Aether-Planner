@@ -25,44 +25,51 @@
         </header>
 
         <div class="settings-panel glassmorphic" id="settings-panel">
-            <div class="settings-header"><h3>Settings</h3><button id="info-btn" class="icon-btn" title="Show Help">ⓘ</button></div>
-            <div class="settings-group"><label for="start-date">Start Date</label><input type="date" id="start-date"></div>
-            <div class="settings-group"><label for="end-date">End Date</label><input type="date" id="end-date"></div>
-            <div class="settings-group">
-                <label>Manage Tags</label>
-                <ul id="tag-list"></ul>
-                <div class="add-tag-form"><input type="text" id="new-tag-name" placeholder="Tag Name"><div class="tag-color-wrapper add-tag-swatch"><input type="color" id="new-tag-color" value="#3498db"></div><button id="add-tag-btn">Add Tag</button></div>
-            </div>
-            <div class="settings-group">
-                <label for="grid-size-select">Months per Row</label>
-                <select id="grid-size-select" class="custom-select">
-                    <option value="1">1 Column</option>
-                    <option value="2">2 Columns</option>
-                    <option value="3">3 Columns</option>
-                    <option value="4">4 Columns</option>
-                    <option value="5">5 Columns</option>
-                    <option value="6">6 Columns</option>
-                </select>
-            </div>
-            <div class="settings-group">
-                <label>Theme Engine</label>
-                <div class="button-group-left">
-                    <button id="light-theme-btn" class="secondary">Light Theme</button>
-                    <button id="dark-theme-btn" class="secondary">Dark Theme</button>
-                </div>
-            </div>
-            <div class="settings-group toggle-group">
-                <label for="counter-toggle">Show Tag Counter</label>
-                <label class="switch"><input type="checkbox" id="counter-toggle"><span class="slider"></span></label>
-            </div>
-            <div class="button-group">
-                <div class="button-group-left">
-                    <button id="generate-btn">Generate Calendar</button>
-                    <button id="download-btn" class="secondary">Download as PNG</button>
-                </div>
-                <button id="reset-btn" class="secondary danger">Reset All Data</button>
-            </div>
+    <div class="settings-header"><h3>Settings</h3><button id="info-btn" class="icon-btn" title="Show Help">ⓘ</button></div>
+
+    <div class="settings-group"><label for="start-date">Start Date</label><input type="date" id="start-date"></div>
+    <div class="settings-group"><label for="end-date">End Date</label><input type="date" id="end-date"></div>
+    <div class="settings-group">
+        <label>Manage Tags</label>
+        <ul id="tag-list"></ul>
+        <div class="add-tag-form"><input type="text" id="new-tag-name" placeholder="Tag Name"><div class="tag-color-wrapper add-tag-swatch"><input type="color" id="new-tag-color" value="#3498db"></div><button id="add-tag-btn">Add Tag</button></div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="settings-group">
+        <label for="grid-size-select">Months per Row</label>
+        <select id="grid-size-select" class="custom-select">
+            <option value="1">1 Column</option>
+            <option value="2">2 Columns</option>
+            <option value="3">3 Columns</option>
+            <option value="4">4 Columns</option>
+            <option value="5">5 Columns</option>
+            <option value="6">6 Columns</option>
+        </select>
+    </div>
+    <div class="settings-group">
+        <label>Theme Engine</label>
+        <div class="button-group-left">
+            <button id="light-theme-btn" class="secondary">Light Theme</button>
+            <button id="dark-theme-btn" class="secondary">Dark Theme</button>
         </div>
+    </div>
+    <div class="settings-group toggle-group">
+        <label for="counter-toggle">Show Tag Counter</label>
+        <label class="switch"><input type="checkbox" id="counter-toggle"><span class="slider"></span></label>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <div class="button-group">
+        <div class="button-group-left">
+            <button id="generate-btn">Generate Calendar</button>
+            <button id="download-btn" class="secondary">Download as PNG</button>
+        </div>
+        <button id="reset-btn" class="secondary danger">Reset All Data</button>
+    </div>
+</div>
 
         <div id="calendar-container"></div>
     </div>
